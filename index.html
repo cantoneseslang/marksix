@@ -4,20 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lottery Number Predictor</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>AIマークシックス予想システム</h1>
-        <label for="date-picker">期日選択:</label>
+        <h1>Lottery Number Predictor</h1>
+        <label for="date-picker">Select Date:</label>
         <input type="date" id="date-picker">
-        <button id="predict-button">予想実行</button>
-        <h2>全数字出現％:</h2>
-        <div id="frequencies-list"></div>
-        <h2>的中高確率数字組み合わせ (週別予想):</h2>
-        <ul id="combinations-list-filtered"></ul>
-        <h2>的中高確率数字組み合わせ (過去トータル):</h2>
-        <ul id="combinations-list-unfiltered"></ul>
+        <button id="predict-button">Predict Numbers</button>
+        <h2>All Number Frequencies:</h2>
+        <div id="frequencies-list" class="frequencies-list"></div>
+        <h2>Predicted Combinations:</h2>
+        <ul id="combinations-list"></ul>
     </div>
     <script src="script.js"></script>
 </body>
