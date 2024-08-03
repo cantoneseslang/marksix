@@ -1,75 +1,165 @@
-body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
-    background-color: #f4f4f4;
+// GitHub GistのJSONファイルの公開URL（正しいRawリンクを使用）
+const jsonUrl = 'https://gist.githubusercontent.com/cantoneseslang/1de427bff5bec392d4e3f6ca5ff71d3d/raw/064388b4847629ab0d4518c10d6c3285b59e7db4/gistfile1.txt';
+
+async function fetchData() {
+    try {
+        console.log('Fetching data from:', jsonUrl);
+        const response = await fetch(jsonUrl);
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        const lottoData = await response.json();
+        console.log('Fetched data:', lottoData);
+        return lottoData;
+    } catch (error) {
+        console.error('Fetching data failed:', error);
+        return [];
+    }
 }
 
-.container {
-    background: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 600px;
-    text-align: center;
+function calculateFrequencies(numbers) {
+    const frequency = Array(49).fill(0); // 1-49 の数字の出現回数をカウント
+    numbers.forEach(num => {
+        frequency[num - 1]++;
+    });
+    const totalNumbers = numbers.length;
+    const frequencies = frequency.map((count, index) => ({
+        number: index + 1,
+        count: count,
+        probability: ((count / totalNumbers) * 100).toFixed(2) + '%'
+    }));
+    return frequencies;
 }
 
-h1, h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
+function getTopNumbers(numbers, count) {
+    const frequencies = calculateFrequencies(numbers);
+    return frequencies.sort((a, b) => b.count - a.count).slice(0, count);
 }
 
-label {
-    display: block;
-    margin-bottom: 10px;
+function generateRandomCombination(numbers, count) {
+    const combination = [];
+    while (combination.length < count) {
+        const randomIndex = Math.floor(Math.random() * numbers.length);
+        const num = numbers[randomIndex];
+        if (!combination.includes(num.number)) {
+            combination.push(num);
+        }
+    }
+    return combination;
 }
 
-input[type="date"] {
-    padding: 10px;
-    width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 20px;
-}
+document.getElementById('predict-button').addEventListener('click', async function() {
+    const selectedDate = document.getElementById('date-picker').value;
+    if (!selectedDate) {
+        alert('Please select a date.');
+        return;
+    }
 
-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
+    console.log('Selected date:', selectedDate);
 
-button:hover {
-    background-color: #0056b3;
-}
+    const dayOfWeek = new Date(selectedDate).getDay();
+    const daysOfWeekMap = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayOfWeekText = daysOfWeekMap[dayOfWeek];
 
-ul {
-    list-style: none;
-    padding: 0;
-}
+    console.log('Day of the week:', dayOfWeekText);
 
-ul li {
-    background: #e9ecef;
-    margin: 5px 0;
-    padding: 10px;
-    border-radius: 5px;
-}
+    const lottoData = await fetchData();
+    console.log('Fetched lotto data:', lottoData);
 
-#frequencies-list {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 10px;
-}
+    const filteredData = lottoData.filter(entry => {
+        const dateText = entry.drawn_result_date;
+        const entryDayOfWeek = dateText.match(/\(星期(.)\)/)[1];
+        const daysOfWeekMapChinese = {
+            '日': 'Sunday',
+            '一': 'Monday',
+            '二': 'Tuesday',
+            '三': 'Wednesday',
+            '四': 'Thursday',
+            '五': 'Friday',
+            '六': 'Saturday'
+        };
+        return daysOfWeekMapChinese[entryDayOfWeek] === dayOfWeekText;
+    });
 
-.frequency-column {
-    display: flex;
-    flex-direction: column;
-}
+    console.log('Filtered data:', filteredData);
 
-.frequency-column li {
-    flex: 1;
-}
+    const allNumbersFiltered = [];
+    filteredData.forEach(entry => {
+        allNumbersFiltered.push(
+            parseInt(entry.drawn_num_text, 10),
+            parseInt(entry['drawn_num_text (2)'], 10),
+            parseInt(entry['drawn_num_text (3)'], 10),
+            parseInt(entry['drawn_num_text (4)'], 10),
+            parseInt(entry['drawn_num_text (5)'], 10),
+            parseInt(entry['drawn_num_text (6)'], 10)
+        );
+    });
+
+    console.log('All numbers (filtered):', allNumbersFiltered);
+
+    const allNumbersUnfiltered = [];
+    lottoData.forEach(entry => {
+        allNumbersUnfiltered.push(
+            parseInt(entry.drawn_num_text, 10),
+            parseInt(entry['drawn_num_text (2)'], 10),
+            parseInt(entry['drawn_num_text (3)'], 10),
+            parseInt(entry['drawn_num_text (4)'], 10),
+            parseInt(entry['drawn_num_text (5)'], 10),
+            parseInt(entry['drawn_num_text (6)'], 10)
+        );
+    });
+
+    console.log('All numbers (unfiltered):', allNumbersUnfiltered);
+
+    const frequenciesFiltered = calculateFrequencies(allNumbersFiltered);
+    const frequenciesUnfiltered = calculateFrequencies(allNumbersUnfiltered);
+
+    const topNumbersFiltered = getTopNumbers(allNumbersFiltered, 20);
+    const topNumbersUnfiltered = getTopNumbers(allNumbersUnfiltered, 20);
+
+    console.log('Top numbers (filtered):', topNumbersFiltered);
+    console.log('Top numbers (unfiltered):', topNumbersUnfiltered);
+
+    const frequenciesList = document.getElementById('frequencies-list');
+    frequenciesList.innerHTML = '';
+
+    const columns = Array.from({ length: 5 }, () => []);
+    frequenciesUnfiltered.forEach((freq, index) => {
+        const columnIndex = index % 5;
+        columns[columnIndex].push(freq);
+    });
+
+    columns.forEach(column => {
+        const columnElement = document.createElement('ul');
+        columnElement.className = 'frequency-column';
+        column.forEach(freq => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${freq.number}: ${freq.probability}`;
+            columnElement.appendChild(listItem);
+        });
+        frequenciesList.appendChild(columnElement);
+    });
+
+    const combinationsListFiltered = document.getElementById('combinations-list-filtered');
+    combinationsListFiltered.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+        const combination = generateRandomCombination(topNumbersFiltered, 6);
+        const listItem = document.createElement('li');
+        const numbersText = combination.map(num => num.number).join(', ');
+        const probabilitiesText = combination.map(num => num.probability).join(', ');
+        listItem.innerHTML = `<strong>${numbersText}</strong><br><em>${probabilitiesText}</em>`;
+        combinationsListFiltered.appendChild(listItem);
+    }
+
+    const combinationsListUnfiltered = document.getElementById('combinations-list-unfiltered');
+    combinationsListUnfiltered.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+        const combination = generateRandomCombination(topNumbersUnfiltered, 6);
+        const listItem = document.createElement('li');
+        const numbersText = combination.map(num => num.number).join(', ');
+        const probabilitiesText = combination.map(num => num.probability).join(', ');
+        listItem.innerHTML = `<strong>${numbersText}</strong><br><em>${probabilitiesText}</em>`;
+        combinationsListUnfiltered.appendChild(listItem);
+    }
+});
