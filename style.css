@@ -1,0 +1,14 @@
+.columns {
+    display: flex;
+    flex-wrap: wrap;
+}
+.frequency-column {
+    flex: 1;
+    margin: 10px;
+}
+.frequency-column li {
+    background-color: #e9ecef;
+    margin: 5px 0;
+    padding: 10px;
+    border-radius: 5px;
+}
