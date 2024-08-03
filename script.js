@@ -1,4 +1,3 @@
-// GitHub GistのJSONファイルの公開URL（正しいRawリンクを使用）
 const jsonUrl = 'https://gist.githubusercontent.com/cantoneseslang/1de427bff5bec392d4e3f6ca5ff71d3d/raw/064388b4847629ab0d4518c10d6c3285b59e7db4/gistfile1.txt';
 
 async function fetchData() {
@@ -84,9 +83,9 @@ document.getElementById('predict-button').addEventListener('click', async functi
 
     console.log('Filtered data:', filteredData);
 
-    const allNumbersFiltered = [];
+    const allNumbers = [];
     filteredData.forEach(entry => {
-        allNumbersFiltered.push(
+        allNumbers.push(
             parseInt(entry.drawn_num_text, 10),
             parseInt(entry['drawn_num_text (2)'], 10),
             parseInt(entry['drawn_num_text (3)'], 10),
@@ -96,37 +95,18 @@ document.getElementById('predict-button').addEventListener('click', async functi
         );
     });
 
-    console.log('All numbers (filtered):', allNumbersFiltered);
+    console.log('All numbers:', allNumbers);
 
-    const allNumbersUnfiltered = [];
-    lottoData.forEach(entry => {
-        allNumbersUnfiltered.push(
-            parseInt(entry.drawn_num_text, 10),
-            parseInt(entry['drawn_num_text (2)'], 10),
-            parseInt(entry['drawn_num_text (3)'], 10),
-            parseInt(entry['drawn_num_text (4)'], 10),
-            parseInt(entry['drawn_num_text (5)'], 10),
-            parseInt(entry['drawn_num_text (6)'], 10)
-        );
-    });
-
-    console.log('All numbers (unfiltered):', allNumbersUnfiltered);
-
-    const frequenciesFiltered = calculateFrequencies(allNumbersFiltered);
-    const frequenciesUnfiltered = calculateFrequencies(allNumbersUnfiltered);
-
-    const topNumbersFiltered = getTopNumbers(allNumbersFiltered, 20);
-    const topNumbersUnfiltered = getTopNumbers(allNumbersUnfiltered, 20);
-
-    console.log('Top numbers (filtered):', topNumbersFiltered);
-    console.log('Top numbers (unfiltered):', topNumbersUnfiltered);
+    const frequencies = calculateFrequencies(allNumbers);
+    const topNumbersWithFrequency = getTopNumbers(allNumbers, 20);
+    console.log('Top numbers with frequency:', topNumbersWithFrequency);
 
     const frequenciesList = document.getElementById('frequencies-list');
     frequenciesList.innerHTML = '';
 
     const columns = Array.from({ length: 5 }, () => []);
-    frequenciesUnfiltered.forEach((freq, index) => {
-        const columnIndex = index % 5;
+    frequencies.forEach((freq, index) => {
+        const columnIndex = Math.floor(index % 5);
         columns[columnIndex].push(freq);
     });
 
@@ -141,25 +121,30 @@ document.getElementById('predict-button').addEventListener('click', async functi
         frequenciesList.appendChild(columnElement);
     });
 
-    const combinationsListFiltered = document.getElementById('combinations-list-filtered');
-    combinationsListFiltered.innerHTML = '';
-    for (let i = 0; i < 3; i++) {
-        const combination = generateRandomCombination(topNumbersFiltered, 6);
-        const listItem = document.createElement('li');
-        const numbersText = combination.map(num => num.number).join(', ');
-        const probabilitiesText = combination.map(num => num.probability).join(', ');
-        listItem.innerHTML = `<strong>${numbersText}</strong><br><em>${probabilitiesText}</em>`;
-        combinationsListFiltered.appendChild(listItem);
+    const combinationsList = document.getElementById('combinations-list');
+    combinationsList.innerHTML = '';
+
+    const generateCombinations = (sourceNumbers) => {
+        const combinations = [];
+        for (let i = 0; i < 3; i++) {
+            const combination = generateRandomCombination(sourceNumbers, 6);
+            const numbersText = combination.map(num => num.number).join(', ');
+            const probabilitiesText = combination.map(num => num.probability).join(', ');
+            combinations.push({ numbersText, probabilitiesText });
+        }
+        return combinations;
     }
 
-    const combinationsListUnfiltered = document.getElementById('combinations-list-unfiltered');
-    combinationsListUnfiltered.innerHTML = '';
-    for (let i = 0; i < 3; i++) {
-        const combination = generateRandomCombination(topNumbersUnfiltered, 6);
+    const combinationsWithFilter = generateCombinations(topNumbersWithFrequency);
+    const combinationsWithoutFilter = generateCombinations(calculateFrequencies(lottoData.flatMap(entry => [
+        parseInt(entry.drawn_num_text, 10),
+        parseInt(entry['drawn_num_text (2)'], 10),
+        parseInt(entry['drawn_num_text (3)'], 10),
+        parseInt(entry['drawn_num_text (4)'], 10),
+        parseInt(entry['drawn_num_text (5)'], 10),
+        parseInt(entry['drawn_num_text (6)'], 10)
+    ])));
+
+    combinationsWithFilter.forEach(combination => {
         const listItem = document.createElement('li');
-        const numbersText = combination.map(num => num.number).join(', ');
-        const probabilitiesText = combination.map(num => num.probability).join(', ');
-        listItem.innerHTML = `<strong>${numbersText}</strong><br><em>${probabilitiesText}</em>`;
-        combinationsListUnfiltered.appendChild(listItem);
-    }
-});
+        listItem.innerHTML = `<strong>${combination.numbersText}</strong><
