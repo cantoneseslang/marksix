@@ -147,4 +147,13 @@ document.getElementById('predict-button').addEventListener('click', async functi
 
     combinationsWithFilter.forEach(combination => {
         const listItem = document.createElement('li');
-        listItem.innerHTML = `<strong>${combination.numbersText}</strong><
+        listItem.innerHTML = `<strong>${combination.numbersText}</strong><br><em>${combination.probabilitiesText}</em>`;
+        combinationsList.appendChild(listItem);
+    });
+
+    combinationsWithoutFilter.forEach(combination => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `<strong>${combination.numbersText}</strong><br><em>${combination.probabilitiesText}</em>`;
+        combinationsList.appendChild(listItem);
+    });
+});
