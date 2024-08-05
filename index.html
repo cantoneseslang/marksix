@@ -1,21 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lottery Number Predictor</title>
+    <title>AI Mark Six Predictor</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Lottery Number Predictor</h1>
-        <label for="date-picker">Select Date:</label>
-        <input type="date" id="date-picker">
-        <button id="predict-button">Predict Numbers</button>
-        <h2>All Number Frequencies:</h2>
-        <div id="frequencies-list" class="frequencies-list"></div>
-        <h2>Predicted Combinations:</h2>
-        <ul id="combinations-list"></ul>
+        <h1>AIマークシックス予想システム</h1>
+        <label for="date-picker">期日選択:</label>
+        <input type="date" id="date-picker" placeholder="yyyy/mm/dd">
+        <button id="predict-button">予想実行</button>
+
+        <h2>全数字出現%:</h2>
+        <div id="frequencies-list"></div>
+
+        <h2>(週別)高確率TOP3 :</h2>
+        <ul id="weekly-combinations-list"></ul>
+
+        <h2>(最近10週)高確率TOP3 :</h2>
+        <ul id="recent-combinations-list"></ul>
+
+        <h2>(過去トータル)高確率TOP3 :</h2>
+        <ul id="total-combinations-list"></ul>
     </div>
     <script src="script.js"></script>
 </body>
