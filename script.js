@@ -48,6 +48,28 @@ function generateRandomCombination(numbers, count) {
     return combination;
 }
 
+function displayFrequencies(frequencies, elementId) {
+    const frequenciesList = document.getElementById(elementId);
+    frequenciesList.innerHTML = '';
+
+    const columns = Array.from({ length: 5 }, () => []);
+    frequencies.forEach((freq, index) => {
+        const columnIndex = Math.floor(index / 10);
+        columns[columnIndex].push(freq);
+    });
+
+    columns.forEach(column => {
+        const columnElement = document.createElement('ul');
+        columnElement.className = 'frequency-column';
+        column.forEach(freq => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${freq.number}: ${freq.probability}`;
+            columnElement.appendChild(listItem);
+        });
+        frequenciesList.appendChild(columnElement);
+    });
+}
+
 document.getElementById('predict-button').addEventListener('click', async function() {
     const selectedDate = document.getElementById('date-picker').value;
     if (!selectedDate) {
@@ -101,59 +123,55 @@ document.getElementById('predict-button').addEventListener('click', async functi
     const topNumbersWithFrequency = getTopNumbers(allNumbers, 20);
     console.log('Top numbers with frequency:', topNumbersWithFrequency);
 
-    const frequenciesList = document.getElementById('frequencies-list');
-    frequenciesList.innerHTML = '';
+    displayFrequencies(frequencies, 'frequencies-list');
 
-    const columns = Array.from({ length: 5 }, () => []);
-    frequencies.forEach((freq, index) => {
-        const columnIndex = Math.floor(index % 5);
-        columns[columnIndex].push(freq);
-    });
-
-    columns.forEach(column => {
-        const columnElement = document.createElement('ul');
-        columnElement.className = 'frequency-column';
-        column.forEach(freq => {
-            const listItem = document.createElement('li');
-            listItem.textContent = `${freq.number}: ${freq.probability}`;
-            columnElement.appendChild(listItem);
-        });
-        frequenciesList.appendChild(columnElement);
-    });
-
-    const combinationsList = document.getElementById('combinations-list');
-    combinationsList.innerHTML = '';
-
-    const generateCombinations = (sourceNumbers) => {
-        const combinations = [];
-        for (let i = 0; i < 3; i++) {
-            const combination = generateRandomCombination(sourceNumbers, 6);
-            const numbersText = combination.map(num => num.number).join(', ');
-            const probabilitiesText = combination.map(num => num.probability).join(', ');
-            combinations.push({ numbersText, probabilitiesText });
-        }
-        return combinations;
+    const combinationsListWeekly = document.getElementById('weekly-combinations-list');
+    combinationsListWeekly.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+        const combination = generateRandomCombination(topNumbersWithFrequency, 6);
+        const listItem = document.createElement('li');
+        const numbersText = combination.map(num => num.number).join(', ');
+        const probabilitiesText = combination.map(num => num.probability).join(', ');
+        listItem.innerHTML = `<strong>${numbersText}</strong><br><em>${probabilitiesText}</em>`;
+        combinationsListWeekly.appendChild(listItem);
     }
 
-    const combinationsWithFilter = generateCombinations(topNumbersWithFrequency);
-    const combinationsWithoutFilter = generateCombinations(calculateFrequencies(lottoData.flatMap(entry => [
-        parseInt(entry.drawn_num_text, 10),
-        parseInt(entry['drawn_num_text (2)'], 10),
-        parseInt(entry['drawn_num_text (3)'], 10),
-        parseInt(entry['drawn_num_text (4)'], 10),
-        parseInt(entry['drawn_num_text (5)'], 10),
-        parseInt(entry['drawn_num_text (6)'], 10)
-    ])));
-
-    combinationsWithFilter.forEach(combination => {
-        const listItem = document.createElement('li');
-        listItem.innerHTML = `<strong>${combination.numbersText}</strong><br><em>${combination.probabilitiesText}</em>`;
-        combinationsList.appendChild(listItem);
+    // 最近10週分のデータを使用
+    const recentData = lottoData.slice(-10); // 最後の10件のデータ
+    const recentNumbers = [];
+    recentData.forEach(entry => {
+        recentNumbers.push(
+            parseInt(entry.drawn_num_text, 10),
+            parseInt(entry['drawn_num_text (2)'], 10),
+            parseInt(entry['drawn_num_text (3)'], 10),
+            parseInt(entry['drawn_num_text (4)'], 10),
+            parseInt(entry['drawn_num_text (5)'], 10),
+            parseInt(entry['drawn_num_text (6)'], 10)
+        );
     });
 
-    combinationsWithoutFilter.forEach(combination => {
+    const recentFrequencies = calculateFrequencies(recentNumbers);
+    const topRecentNumbersWithFrequency = getTopNumbers(recentNumbers, 20);
+
+    const combinationsListRecent = document.getElementById('recent-combinations-list');
+    combinationsListRecent.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+        const combination = generateRandomCombination(topRecentNumbersWithFrequency, 6);
         const listItem = document.createElement('li');
-        listItem.innerHTML = `<strong>${combination.numbersText}</strong><br><em>${combination.probabilitiesText}</em>`;
-        combinationsList.appendChild(listItem);
-    });
+        const numbersText = combination.map(num => num.number).join(', ');
+        const probabilitiesText = combination.map(num => num.probability).join(', ');
+        listItem.innerHTML = `<strong>${numbersText}</strong><br><em>${probabilitiesText}</em>`;
+        combinationsListRecent.appendChild(listItem);
+    }
+
+    const combinationsListTotal = document.getElementById('total-combinations-list');
+    combinationsListTotal.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+        const combination = generateRandomCombination(frequencies, 6);
+        const listItem = document.createElement('li');
+        const numbersText = combination.map(num => num.number).join(', ');
+        const probabilitiesText = combination.map(num => num.probability).join(', ');
+        listItem.innerHTML = `<strong>${numbersText}</strong><br><em>${probabilitiesText}</em>`;
+        combinationsListTotal.appendChild(listItem);
+    }
 });
